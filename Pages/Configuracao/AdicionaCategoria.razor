@@ -1,0 +1,135 @@
+﻿@page "/adicionacategoria"
+@inject CategoriaService service
+@inject NavigationManager nav
+@inject IJSRuntime js
+
+<h3>Adiciona Categoria</h3>
+
+<EditForm Model="categoria" OnValidSubmit="AdicionarCategoria">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label>Nome</label>
+        <InputText @bind-Value="categoria.Nome" class="form-control col-6" />
+    </div>
+    <div class="form-group">
+        <label>Descrição</label>
+        <InputText @bind-Value="categoria.Descricao" class="form-control col-6" />
+    </div>
+    <button type="submit" @onclick="ClosePopup">Gravar</button>
+</EditForm>
+
+<h3>Lista de categorias</h3>
+<br />
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Opções</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Categoria cat in categorias)
+        {
+            <tr>
+                <td>@cat.IdCategoria</td>
+                <td>@cat.Nome</td>
+                <td>@cat.Descricao</td>
+                <td><button class="btn btn-warning" @onclick="(() => OpenPopUp(cat.IdCategoria))">Editar</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+@if (@ShowModal)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Categoria Incluída</h3>
+                    <!-- Button to close the popup -->
+                    <button type="button" class="close"
+                            @onclick="ClosePopup">
+                        X
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="categoria" OnValidSubmit="EditaCategoria">
+                        <DataAnnotationsValidator />
+                        <div class="form-group">
+                            <label>Nomes</label>
+                            <InputText @bind-Value="categoriaEdit.Nome" class="form-control col-6" />
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <InputText @bind-Value="categoriaEdit.Descricao" class="form-control col-6" />
+                        </div>
+                        <button type="submit" @onclick="ClosePopup">Gravar</button>
+                    </EditForm>
+                    @*<button class="btn btn btn-info" @onclick="ClosePopup">Fechar</button>*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    Categoria categoria = new Categoria();
+    Categoria categoriaEdit = new Categoria();
+    List<Categoria> categorias = new List<Categoria>();
+    bool ShowModal = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregaCategorias();
+        ShowModal = false;
+    }
+
+
+    async Task AdicionarCategoria()
+    {
+        await service.PostCategoriaAsync(categoria);
+        await js.InvokeVoidAsync("alert", "Categoria incluída!");
+        nav.NavigateTo("adicionacategoria", true);
+    }
+
+
+    async Task EditaCategoria()
+    {
+        var cat = new Categoria()
+        {
+            IdCategoria = categoriaEdit.IdCategoria,
+            Nome = categoriaEdit.Nome,
+            Descricao = categoriaEdit.Descricao
+        };
+        await service.UpdateCategoriaAsync(cat.IdCategoria, cat);
+        await js.InvokeVoidAsync("alert", "Categoria alterada");
+        Refresh();
+    }
+
+    async Task CarregaCategorias()
+    {
+        categorias = await service.GetCategoriaAsync();
+    }
+
+    void ClosePopup()
+    {
+        ShowModal = false;
+    }
+
+    async Task OpenPopUp(int Id)
+    {
+        ShowModal = true;
+        categoriaEdit = await service.GetCategoriaAsync(Id);
+    }
+
+    void Refresh()
+    {
+        nav.NavigateTo("adicionacategoria", true);
+    }
+}

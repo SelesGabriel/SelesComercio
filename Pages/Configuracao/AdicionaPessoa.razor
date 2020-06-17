@@ -1,0 +1,47 @@
+﻿@page "/adicionapessoa"
+@inject NavigationManager navigation
+@inject PessoaService pessoaService
+
+<h3>Configuracao Pessoa</h3>
+
+<EditForm Model="pessoa" OnValidSubmit="AdicionarPessoa">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label class="col-md-6">Nome: </label>
+        <InputText @bind-Value="pessoa.Nome" class="form-control col-md-6" />
+        <ValidationMessage For="(()=> pessoa.Nome)" />
+    </div>
+    <div class="form-group">
+        <label class="col-md-6">Sobrenome: </label>
+        <InputText @bind-Value="pessoa.Sobrenome" class="form-control col-md-6" />
+        <ValidationMessage For="(()=> pessoa.Sobrenome)" />
+    </div>
+    <div class="form-group">
+        <label class="col-md-6">Email: </label>
+        <InputText @bind-Value="pessoa.Email" class="form-control col-md-6" />
+        <ValidationMessage For="(()=> pessoa.Email)" />
+    </div>
+    <div class="form-group">
+        <label class="col-md-6">CPF: </label>
+        <InputText @bind-Value="pessoa.CPF" class="form-control col-md-6" />
+        <ValidationMessage For="(()=> pessoa.CPF)" />
+    </div>
+    <div class="form-group">
+        <label class="col-md-6">Nome: </label>
+        <InputDate @bind-Value="pessoa.DataNascimento" class="form-control col-md-6" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-success">Confirmar</button>
+</EditForm>
+
+@code {
+    Pessoa pessoa = new Pessoa();
+
+    async Task AdicionarPessoa()
+    {
+        await pessoaService.PostPessoaAsync(pessoa);
+        navigation.NavigateTo("");
+    }
+
+
+}
